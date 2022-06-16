@@ -1,6 +1,11 @@
 .idea
 __pycache__
-*.pt
 
+# Weights
+*.pt
+reid/logs
+reid/model
+
+# Test files
 test_data
 test.py
