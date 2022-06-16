@@ -1,4 +1,6 @@
 .idea
-test_data
-*.pt
 __pycache__
+*.pt
+
+test_data
+test.py
