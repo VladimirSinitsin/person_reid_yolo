@@ -1,8 +1,9 @@
-import os
 import cv2
 import torch
 import numpy as np
+
 from typing import List
+from pathlib import Path
 
 
 class Yolo:
@@ -48,7 +49,7 @@ class Yolo:
 
 
 if __name__ == "__main__":
-    image = cv2.imread(os.path.join(os.getcwd(), "test_data/test_we.png"))
+    image = cv2.imread(str(Path.joinpath(Path(__file__).parent.parent, "test_data/test_we.png")))
 
     yolo = Yolo()
     # Just infer.
