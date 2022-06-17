@@ -3,6 +3,8 @@ import numpy as np
 import tensorflow as tf
 
 from config import ROOTPATH
+from config import REID_IMAGE_W, REID_IMAGE_H
+from tools import reid_img_preproc
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer('batch_size', '150', 'batch size for training')
@@ -16,15 +18,12 @@ tf.flags.DEFINE_string('image2', '', 'Second image path to compare')
 
 
 class Reid:
-    IMAGE_W = 60
-    IMAGE_H = 160
-
     def __init__(self):
         tf.reset_default_graph()
         FLAGS.batch_size = 1
 
         tf.placeholder(tf.float32, name='learning_rate')
-        self.images = tf.placeholder(tf.float32, [2, FLAGS.batch_size, Reid.IMAGE_H, Reid.IMAGE_W, 3], name='images')
+        self.images = tf.placeholder(tf.float32, [2, FLAGS.batch_size, REID_IMAGE_H, REID_IMAGE_W, 3], name='images')
         labels = tf.placeholder(tf.float32, [FLAGS.batch_size, 2], name='labels')
         self.is_train = tf.placeholder(tf.bool, name='is_train')
         tf.Variable(0, name='global_step', trainable=False)
@@ -44,12 +43,8 @@ class Reid:
             raise Exception("REID Error: Bad checkpoints path!")
 
     def compare(self, image_1, image_2):
-        image1 = cv2.resize(image_1, (Reid.IMAGE_W, Reid.IMAGE_H))
-        image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2RGB)
-        image1 = np.reshape(image1, (1, Reid.IMAGE_H, Reid.IMAGE_W, 3)).astype(float)
-        image2 = cv2.resize(image_2, (Reid.IMAGE_W, Reid.IMAGE_H))
-        image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2RGB)
-        image2 = np.reshape(image2, (1, Reid.IMAGE_H, Reid.IMAGE_W, 3)).astype(float)
+        image1 = reid_img_preproc(image_1)
+        image2 = reid_img_preproc(image_2)
         test_images = np.array([image1, image2])
 
         feed_dict = {self.images: test_images, self.is_train: False}
@@ -62,33 +57,33 @@ class Reid:
             split = tf.split(images, [1, 1])
             shape = [1 for _ in range(split[0].get_shape()[1])]
             for i in range(len(split)):
-                split[i] = tf.reshape(split[i], [FLAGS.batch_size, Reid.IMAGE_H, Reid.IMAGE_W, 3])
-                split[i] = tf.image.resize_images(split[i], [Reid.IMAGE_H + 8, Reid.IMAGE_W + 3])
+                split[i] = tf.reshape(split[i], [FLAGS.batch_size, REID_IMAGE_H, REID_IMAGE_W, 3])
+                split[i] = tf.image.resize_images(split[i], [REID_IMAGE_H + 8, REID_IMAGE_W + 3])
                 split[i] = tf.split(split[i], shape)
                 for j in range(len(split[i])):
-                    split[i][j] = tf.reshape(split[i][j], [Reid.IMAGE_H + 8, Reid.IMAGE_W + 3, 3])
-                    split[i][j] = tf.random_crop(split[i][j], [Reid.IMAGE_H, Reid.IMAGE_W, 3])
+                    split[i][j] = tf.reshape(split[i][j], [REID_IMAGE_H + 8, REID_IMAGE_W + 3, 3])
+                    split[i][j] = tf.random_crop(split[i][j], [REID_IMAGE_H, REID_IMAGE_W, 3])
                     split[i][j] = tf.image.random_flip_left_right(split[i][j])
                     split[i][j] = tf.image.random_brightness(split[i][j], max_delta=32. / 255.)
                     split[i][j] = tf.image.random_saturation(split[i][j], lower=0.5, upper=1.5)
                     split[i][j] = tf.image.random_hue(split[i][j], max_delta=0.2)
                     split[i][j] = tf.image.random_contrast(split[i][j], lower=0.5, upper=1.5)
                     split[i][j] = tf.image.per_image_standardization(split[i][j])
-            return [tf.reshape(tf.concat(split[0], axis=0), [FLAGS.batch_size, Reid.IMAGE_H, Reid.IMAGE_W, 3]),
-                    tf.reshape(tf.concat(split[1], axis=0), [FLAGS.batch_size, Reid.IMAGE_H, Reid.IMAGE_W, 3])]
+            return [tf.reshape(tf.concat(split[0], axis=0), [FLAGS.batch_size, REID_IMAGE_H, REID_IMAGE_W, 3]),
+                    tf.reshape(tf.concat(split[1], axis=0), [FLAGS.batch_size, REID_IMAGE_H, REID_IMAGE_W, 3])]
 
         def val():
             split = tf.split(images, [1, 1])
             shape = [1 for _ in range(split[0].get_shape()[1])]
             for i in range(len(split)):
-                split[i] = tf.reshape(split[i], [FLAGS.batch_size, Reid.IMAGE_H, Reid.IMAGE_W, 3])
-                split[i] = tf.image.resize_images(split[i], [Reid.IMAGE_H, Reid.IMAGE_W])
+                split[i] = tf.reshape(split[i], [FLAGS.batch_size, REID_IMAGE_H, REID_IMAGE_W, 3])
+                split[i] = tf.image.resize_images(split[i], [REID_IMAGE_H, REID_IMAGE_W])
                 split[i] = tf.split(split[i], shape)
                 for j in range(len(split[i])):
-                    split[i][j] = tf.reshape(split[i][j], [Reid.IMAGE_H, Reid.IMAGE_W, 3])
+                    split[i][j] = tf.reshape(split[i][j], [REID_IMAGE_H, REID_IMAGE_W, 3])
                     split[i][j] = tf.image.per_image_standardization(split[i][j])
-            return [tf.reshape(tf.concat(split[0], axis=0), [FLAGS.batch_size, Reid.IMAGE_H, Reid.IMAGE_W, 3]),
-                    tf.reshape(tf.concat(split[1], axis=0), [FLAGS.batch_size, Reid.IMAGE_H, Reid.IMAGE_W, 3])]
+            return [tf.reshape(tf.concat(split[0], axis=0), [FLAGS.batch_size, REID_IMAGE_H, REID_IMAGE_W, 3]),
+                    tf.reshape(tf.concat(split[1], axis=0), [FLAGS.batch_size, REID_IMAGE_H, REID_IMAGE_W, 3])]
 
         return tf.cond(is_train, train, val)
 
