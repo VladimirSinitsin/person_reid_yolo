@@ -6,6 +6,9 @@ __pycache__
 reid/logs
 reid/model
 
+# db
+db/person_images.db
+
 # Test files
 test_data
 test.py
