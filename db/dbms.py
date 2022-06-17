@@ -4,9 +4,14 @@ import numpy as np
 from pathlib import Path
 
 from config import ROOTPATH
+from config import RECREATE_DB
 from tools import bytes_to_image
 from tools import get_date_now_formatted
 
+
+# DBMS debugging.
+if RECREATE_DB and Path.joinpath(ROOTPATH, "db/person_images.db").exists():
+    Path.joinpath(ROOTPATH, "db/person_images.db").unlink()
 
 # Connect to DB.
 db_path = Path.joinpath(ROOTPATH, "db/person_images.db")
