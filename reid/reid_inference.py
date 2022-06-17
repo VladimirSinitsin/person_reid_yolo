@@ -2,9 +2,8 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-from pathlib import Path
+from config import ROOTPATH
 
-ROOTPATH = Path(__file__).parent.parent
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer('batch_size', '150', 'batch size for training')
 tf.flags.DEFINE_integer('max_steps', '210000', 'max steps for training')
@@ -55,7 +54,7 @@ class Reid:
 
         feed_dict = {self.images: test_images, self.is_train: False}
         prediction = self.sess.run(self.inference, feed_dict=feed_dict)
-        return bool(not np.argmax(prediction[0]))
+        return not np.argmax(prediction[0])  # if index=0 - True(same) else if index=1 - False(diff)
 
     @staticmethod
     def _preprocess(images, is_train):
