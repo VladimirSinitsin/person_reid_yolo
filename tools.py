@@ -4,6 +4,7 @@ import datetime
 import numpy as np
 
 from config import REID_IMAGE_W, REID_IMAGE_H
+from config import REID_IMAGE_SHAPE, REID_IMAGE_DTYPE
 
 
 TIME_ZONE = 'Europe/Moscow'
@@ -22,3 +23,8 @@ def reid_img_preproc(src_image: np.ndarray) -> np.ndarray:
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = np.reshape(image, (1, REID_IMAGE_H, REID_IMAGE_W, 3)).astype(float)
     return image
+
+
+def bytes_to_image(img_bytes: bytes) -> np.ndarray:
+    """ Serialized bytes to numpy array (image). """
+    return np.ndarray(shape=REID_IMAGE_SHAPE, dtype=REID_IMAGE_DTYPE, buffer=img_bytes)

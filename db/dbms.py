@@ -4,6 +4,7 @@ import numpy as np
 from pathlib import Path
 
 from config import ROOTPATH
+from tools import bytes_to_image
 from tools import get_date_now_formatted
 
 
@@ -29,7 +30,7 @@ def insert_image_data(person_id: int, prediction: float, image: np.ndarray) -> N
     insert({"person_id": person_id,
             "prediction": f'{prediction:.3f}',  # 0.999, 0.700, 0.101, 0.005 etc.
             "date": get_date_now_formatted(),
-            "image": image})  # TODO: convert to bytes.
+            "image": image.tobytes()})
 
 
 def insert(column_values: dict) -> None:
@@ -71,7 +72,7 @@ def select_curr_images_data(person_id: int) -> list:
         dict_row = {"person_id": row[1],
                     "prediction": row[2],
                     "date": row[3],
-                    "image": row[4]}  # TODO: convert from bytes
+                    "image": bytes_to_image(row[4])}  # TODO: convert from bytes
         result.append(dict_row)
     # Sorting by prediction.
     sorted_result = sorted(result, key=lambda d: float(d["prediction"]))
