@@ -12,3 +12,4 @@ db/person_images.db
 # Test files
 test_data
 test.py
+test_db.py

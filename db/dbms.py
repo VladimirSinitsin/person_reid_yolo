@@ -54,7 +54,7 @@ def select_all_images_data() -> list:
         dict_row = {"person_id": row[1],
                     "prediction": row[2],
                     "date": row[3],
-                    "image": row[4]}  # TODO: convert from bytes
+                    "image": bytes_to_image(row[4])}
         result.append(dict_row)
     return result
 
@@ -72,7 +72,7 @@ def select_curr_images_data(person_id: int) -> list:
         dict_row = {"person_id": row[1],
                     "prediction": row[2],
                     "date": row[3],
-                    "image": bytes_to_image(row[4])}  # TODO: convert from bytes
+                    "image": bytes_to_image(row[4])}
         result.append(dict_row)
     # Sorting by prediction.
     sorted_result = sorted(result, key=lambda d: float(d["prediction"]))
