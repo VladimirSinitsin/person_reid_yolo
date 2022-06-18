@@ -3,6 +3,7 @@ import pytz
 import datetime
 import numpy as np
 
+from config import BLACK_MARGINS
 from config import REID_IMAGE_W, REID_IMAGE_H
 from config import REID_IMAGE_SHAPE, REID_IMAGE_DTYPE
 
@@ -19,10 +20,21 @@ def get_date_now_formatted() -> str:
 
 def reid_img_preproc(src_image: np.ndarray) -> np.ndarray:
     """ Preproc image to Reid. """
-    image = cv2.resize(src_image, (REID_IMAGE_W, REID_IMAGE_H))
+    image = add_black_margins(src_image) if BLACK_MARGINS else src_image
+    image = cv2.resize(image, (REID_IMAGE_W, REID_IMAGE_H))
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = np.reshape(image, (1, REID_IMAGE_H, REID_IMAGE_W, 3)).astype(float)
     return image
+
+
+def add_black_margins(src_image: np.ndarray) -> np.ndarray:
+    """ Image enlargement with the addition of black margins. """
+    height, width, depth = src_image.shape
+    required_height = round(REID_IMAGE_H * width / REID_IMAGE_W)
+    half_diff = round((required_height - height) / 2)
+    new_image = np.zeros((required_height, width, depth), src_image.dtype)
+    new_image[half_diff:half_diff+height, 0:width] = src_image
+    return new_image
 
 
 def reid_img_revert(src_image: np.ndarray) -> np.ndarray:
