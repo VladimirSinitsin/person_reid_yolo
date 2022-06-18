@@ -81,3 +81,10 @@ def select_curr_images_data(person_id: int) -> list:
     # Sorting by prediction.
     sorted_result = sorted(result, key=lambda d: float(d["prediction"]))
     return sorted_result
+
+
+def select_max_person_id() -> int:
+    """ Select max value of person_id column. """
+    cursor.execute(f"SELECT person_id FROM PersonImages")
+    rows = np.array(cursor.fetchall())
+    return np.max(rows)
