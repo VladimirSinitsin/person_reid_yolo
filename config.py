@@ -11,4 +11,4 @@ REID_IMAGE_W = REID_IMAGE_SHAPE[2]
 REID_IMAGE_DTYPE = np.dtype("float64")
 
 # DBMS debugging.
-RECREATE_DB = True  # must False
+RECREATE_DB = False  # must False

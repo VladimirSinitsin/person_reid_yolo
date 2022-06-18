@@ -9,6 +9,9 @@ reid/model
 # db
 db/person_images.db
 
+# visualisation
+visualisation
+
 # Test files
 test_data
 test.py
