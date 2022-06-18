@@ -1,4 +1,5 @@
 import cv2
+import shutil
 
 from tqdm import tqdm
 from pathlib import Path
@@ -12,6 +13,8 @@ from tools import reid_img_revert
 def main():
     # Create directory.
     vis_path = Path.joinpath(ROOTPATH, "visualisation")
+    if vis_path.exists():
+        shutil.rmtree(vis_path)
     vis_path.mkdir(exist_ok=True)
 
     # Read images from DB.
