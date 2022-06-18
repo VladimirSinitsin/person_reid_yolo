@@ -2,8 +2,8 @@ import cv2
 import torch
 import numpy as np
 
-from typing import List
 from pathlib import Path
+from typing import List, Tuple
 
 
 class Yolo:
@@ -18,29 +18,29 @@ class Yolo:
         Infer people on image.
 
         :param image: image in numpy format.
-        :return: numpy array with bboxes ([x_min, y_min, x_max, y_max])
+        :return: numpy array with bboxes ([x_min, y_min, x_max, y_max]).
         """
         results = self.model(image)
         results_pd = results.pandas().xyxy[0]
         bboxes = np.array(results_pd[['xmin', 'ymin', 'xmax', 'ymax']]).astype(int)
         return bboxes
 
-    def create_person_images(self, image: np.ndarray) -> List[np.ndarray]:
+    def create_person_images(self, image: np.ndarray) -> Tuple[List[np.ndarray], np.ndarray]:
         """
         Create cropped images with detected people on source image.
         :param image: image in numpy format.
-        :return: list with cropped images on numpy format.
+        :return: list with cropped images on numpy format and bboxes - numpy array ([x_min, y_min, x_max, y_max]).
         """
         bboxes = self.infer(image)
         images = [self._crop_image(image, bbox) for bbox in bboxes]
-        return images
+        return images, bboxes
 
     @staticmethod
     def _crop_image(image: np.ndarray, bbox: np.ndarray) -> np.ndarray:
         """
         Crop bbox from image.
         :param image: image in numpy format.
-        :param bbox: numpy array ([x_min, y_min, x_max, y_max])
+        :param bbox: numpy array ([x_min, y_min, x_max, y_max]).
         :return: cropped image in numpy format.
         """
         x_min, y_min, x_max, y_max = bbox
