@@ -30,10 +30,9 @@ if not table_exists:
     conn.commit()
 
 
-def insert_image_data(person_id: int, prediction: float, image: np.ndarray) -> None:
+def insert_image_data(person_id: int, image: np.ndarray) -> None:
     """ Insert image data on DB. """
     insert({"person_id": person_id,
-            "prediction": f'{prediction:.3f}',  # 0.999, 0.700, 0.101, 0.005 etc.
             "date": get_date_now_formatted(),
             "image": image.tobytes()})
 
