@@ -12,10 +12,10 @@ TIME_ZONE = 'Europe/Moscow'
 
 
 def get_date_now_formatted() -> str:
-    """ Get now datetime in %Y-%m-%d_%H:%M:%S format. """
+    """ Get now datetime in %Y-%m-%d_%H:%M:%S:%f format. """
     tz = pytz.timezone(TIME_ZONE)
     now = datetime.datetime.now(tz)
-    return now.strftime("%Y-%m-%d_%H:%M:%S")
+    return now.strftime("%Y-%m-%d_%H:%M:%S:%f")
 
 
 def reid_img_preproc(src_image: np.ndarray) -> np.ndarray:
