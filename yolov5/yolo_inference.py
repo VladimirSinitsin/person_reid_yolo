@@ -55,7 +55,7 @@ if __name__ == "__main__":
     # Just infer.
     print("bboxes:\n", yolo.infer(image))
     # Infer and create cropped images with people.
-    person_images = yolo.create_person_images(image)
+    person_images, bboxes = yolo.create_person_images(image)
     for img in person_images:
         cv2.imshow("test", img)
         cv2.waitKey(0)
