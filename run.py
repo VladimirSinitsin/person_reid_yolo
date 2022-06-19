@@ -9,8 +9,8 @@ from tools import get_iou
 from tools import get_xy_max_diff
 from tools import reid_img_preproc
 from tools import get_date_now_formatted
+from config import SOURCE_VIDEO_FILE_PATH, SAVE_RECORDS, REC_PATH, EACH_FRAME
 from config import XY_THRESHOLD, IOU_THRESHOLD, MAX_IOU_THRESHOLD, PERSON_REID_THRESHOLD
-from config import SOURCE_VIDEO_FILE_PATH, SAVE_RECORDS, REC_PATH, EACH_FRAME, STEP_PERSONS_DATA
 
 
 class MainClass:
@@ -85,8 +85,9 @@ class MainClass:
                 return self.reid_comparator(person_image)  # else: new or not, reid will check
 
     def reid_comparator(self, person_image: np.ndarray) -> int:
+        """ Compare `person_image` with other people in DB using Reid. """
         max_person_id = db.select_max_person_id()
-        if max_person_id == -1:
+        if max_person_id == -1:  # if db is empty
             return 0
         coincidences = []
         for person_id in range(max_person_id + 1):
@@ -95,20 +96,21 @@ class MainClass:
             coincidences.append(coincidence)
         coincidences = np.array(coincidences)
         max_coincidence, ind = np.max(coincidences), np.argmax(coincidences)
+        # Set id of person from DB or new.
         curr_person_id = int(ind) if max_coincidence >= PERSON_REID_THRESHOLD else max_person_id + 1
         return curr_person_id
 
     def persons_compare(self, person_image: np.ndarray, other_images_data: list) -> float:
+        """ Compare `person_image` with list of images with other people using Reid. """
         same = 0
-        diff = 0
-        for ind in range(0, len(other_images_data), len(other_images_data) // 10 + 1):
+        count = 0
+        for ind in range(0, len(other_images_data), len(other_images_data) // 10 + 1):  # step 1 (1-9), 2 (10-19) etc.
             other_data = other_images_data[ind]
             other_image = other_data["image"]
             is_same = self.reid.compare(person_image, other_image)
             same += is_same
-            diff += 1
-        return same / diff * 100
-
+            count += 1
+        return same / count * 100
 
     @staticmethod
     def save_frame(frame: np.ndarray) -> None:
