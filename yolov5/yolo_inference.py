@@ -2,8 +2,9 @@ import cv2
 import torch
 import numpy as np
 
-from pathlib import Path
 from typing import List, Tuple
+
+from config import ROOTPATH, YOLO_THRESHOLD
 
 
 class Yolo:
@@ -24,7 +25,7 @@ class Yolo:
         results_pd = results.pandas().xyxy[0]
         bboxes = np.array(results_pd[["xmin", "ymin", "xmax", "ymax"]]).astype(int)
         confidence = np.array(results_pd["confidence"]).astype(float)
-        bboxes = np.array([bboxes[i] for i, c in enumerate(confidence) if c > 0.9]) if bboxes.size != 0 else bboxes
+        bboxes = np.array([bboxes[i] for i, c in enumerate(confidence) if c > YOLO_THRESHOLD * 0.01]) if bboxes.size != 0 else bboxes
         return bboxes
 
     def create_person_images(self, image: np.ndarray) -> Tuple[List[np.ndarray], np.ndarray]:
@@ -51,7 +52,7 @@ class Yolo:
 
 
 if __name__ == "__main__":
-    image = cv2.imread(str(Path.joinpath(Path(__file__).parent.parent, "test_data/test_we.png")))
+    image = cv2.imread(f"{ROOTPATH}/test_data/test_we.png")
 
     yolo = Yolo()
     # Just infer.
