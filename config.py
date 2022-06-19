@@ -17,9 +17,9 @@ REID_IMAGE_DTYPE = np.dtype("float64")
 BLACK_MARGINS = True
 
 # Video capturing settings.
-SOURCE_VIDEO_FILE_PATH = f"{ROOTPATH}/test_data/we_2.mp4"
+SOURCE_VIDEO_FILE_PATH = f"{ROOTPATH}/test_data/we_1.mp4"
 SAVE_RECORDS = True
-REC_PATH = f"{ROOTPATH}/recordings"
+REC_PATH = Path.joinpath(ROOTPATH, "recordings")
 EACH_FRAME = 3
 XY_THRESHOLD = 20
 IOU_THRESHOLD = 20

@@ -9,8 +9,12 @@ reid/model
 # db
 db/person_images.db
 
-# visualisation
+# images
 visualisation
+recordings
+
+# video
+*.mp4
 
 # Test files
 test_data

@@ -1,4 +1,5 @@
 import cv2
+import shutil
 import numpy as np
 
 import db
@@ -6,6 +7,7 @@ import db
 from reid import Reid
 from yolov5 import Yolo
 from tools import get_iou
+from tools import mark_frame
 from tools import get_y_max_diff
 from tools import reid_img_preproc
 from tools import get_date_now_formatted
@@ -20,6 +22,12 @@ class MainClass:
         self.reid = Reid()
         self.prev_bboxes_data = []  # condition storage
         self.temp_prev_bboxes_data = []  # temporary condition storage
+
+        if SAVE_RECORDS:
+            # Create directory.
+            if REC_PATH.exists():
+                shutil.rmtree(REC_PATH)
+            REC_PATH.mkdir(exist_ok=True)
 
     def file_capturing(self) -> None:
         cap = cv2.VideoCapture(SOURCE_VIDEO_FILE_PATH)
@@ -52,6 +60,7 @@ class MainClass:
 
     def frame_proc(self, frame: np.ndarray) -> np.ndarray:
         self.temp_prev_bboxes_data = []
+        person_objects = []
         person_images, bboxes = self.yolo.create_person_images(frame)
         for person_image, bbox in zip(person_images, bboxes):
             person_image = reid_img_preproc(person_image)
@@ -59,8 +68,10 @@ class MainClass:
             self.temp_prev_bboxes_data.append({"p_id": person_id, "bbox": bbox})
             if person_id != -1:
                 db.insert_image_data(person_id=person_id, image=person_image)
+            person_objects.append({"p_id": person_id, "bbox": bbox})
         self.prev_bboxes_data = self.temp_prev_bboxes_data
-        return frame
+        result_frame = mark_frame(frame, person_objects)
+        return result_frame
 
     def person_proc(self, person_image: np.ndarray, bbox: np.ndarray) -> int:
         # Create list of tuples (iou, bbox).
