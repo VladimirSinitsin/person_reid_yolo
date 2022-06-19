@@ -9,15 +9,15 @@ from tools import get_iou
 from tools import get_xy_max_diff
 from tools import reid_img_preproc
 from tools import get_date_now_formatted
-from config import XY_THRESHOLD, IOU_THRESHOLD, MAX_IOU_THRESHOLD
-from config import SOURCE_VIDEO_FILE_PATH, SAVE_RECORDS, REC_PATH, EACH_FRAME
+from config import XY_THRESHOLD, IOU_THRESHOLD, MAX_IOU_THRESHOLD, PERSON_REID_THRESHOLD
+from config import SOURCE_VIDEO_FILE_PATH, SAVE_RECORDS, REC_PATH, EACH_FRAME, STEP_PERSONS_DATA
 
 
 class MainClass:
     def __init__(self) -> None:
         """ Init nets. """
-        # self.reid = Reid()
         self.yolo = Yolo()
+        self.reid = Reid()
         self.prev_bboxes_data = []  # condition storage
         self.temp_prev_bboxes_data = []  # temporary condition storage
 
@@ -26,7 +26,11 @@ class MainClass:
         i_frame = 0
         while True:
             # Read frame from video.
-            _, frame = cap.read()
+            ret, frame = cap.read()
+            if frame is None:
+                break
+            if not ret:
+                continue
             # Skip frames.
             i_frame += 1
             if i_frame % EACH_FRAME != 0:
@@ -34,6 +38,7 @@ class MainClass:
 
             # Work with frame.
             result_frame = self.frame_proc(frame)
+            result_frame = cv2.resize(result_frame, (1280, 720))
             cv2.imshow("Q for exit", result_frame)
             # Save `result_frame` to `REC_PATH`
             if SAVE_RECORDS:
@@ -46,9 +51,14 @@ class MainClass:
         cap.release()
 
     def frame_proc(self, frame: np.ndarray) -> np.ndarray:
+        self.temp_prev_bboxes_data = []
         person_images, bboxes = self.yolo.create_person_images(frame)
         for person_image, bbox in zip(person_images, bboxes):
+            person_image = reid_img_preproc(person_image)
             person_id = self.person_proc(person_image, bbox)
+            self.temp_prev_bboxes_data.append({"p_id": person_id, "bbox": bbox})
+            if person_id != -1:
+                db.insert_image_data(person_id=person_id, image=person_image)
         self.prev_bboxes_data = self.temp_prev_bboxes_data
         return frame
 
@@ -56,31 +66,48 @@ class MainClass:
         # Create list of tuples (iou, bbox).
         iou = [(get_iou(prev_bbox_data["bbox"], bbox), prev_bbox_data) for prev_bbox_data in self.prev_bboxes_data]
         if len(iou) == 0:  # if new person (can be only part of body)
-            self.temp_prev_bboxes_data.append({"p_id": -1, "bbox": bbox})
             return -1
         max_iou = sorted(iou, key=lambda x: x[0])[-1]
         if max_iou[0] < IOU_THRESHOLD:  # if small iou - new person (can be only part of body)
-            self.temp_prev_bboxes_data.append({"p_id": -1, "bbox": bbox})
             return -1
-        xy_20 = get_xy_max_diff(bbox, max_iou[1]["bbox"]) < XY_THRESHOLD
+        xy_thr = get_xy_max_diff(bbox, max_iou[1]["bbox"]) < XY_THRESHOLD
         # Sophisticated logic.
-        if xy_20 and max_iou[1]["p_id"] == -1:  # second arrival of a new person (small bbox change)
+        if xy_thr and max_iou[1]["p_id"] == -1:  # second arrival of a new person (small bbox change)
             return self.reid_comparator(person_image)
-        elif xy_20 and max_iou[1]["p_id"] != -1:  # another arrival of an already known person (small bbox change)
+        elif xy_thr and max_iou[1]["p_id"] != -1:  # another arrival of an already known person (small bbox change)
             return max_iou[1]["p_id"]
-        elif not xy_20 and max_iou[1]["p_id"] == -1:  # big bbox change and unknown person
-            self.temp_prev_bboxes_data.append({"p_id": -1, "bbox": bbox})
+        elif not xy_thr and max_iou[1]["p_id"] == -1:  # big bbox change and unknown person
             return -1
-        elif not xy_20 and max_iou[1]["p_id"] != -1:  # perhaps known, but because of big bbox change
+        elif not xy_thr and max_iou[1]["p_id"] != -1:  # perhaps known, but because of big bbox change
             if max_iou[0] > MAX_IOU_THRESHOLD:
                 return max_iou[1]["p_id"]  # if the intersection is big - believe that the known person
             else:
                 return self.reid_comparator(person_image)  # else: new or not, reid will check
 
     def reid_comparator(self, person_image: np.ndarray) -> int:
-        reid_image = reid_img_preproc(person_image)
+        max_person_id = db.select_max_person_id()
+        if max_person_id == -1:
+            return 0
+        coincidences = []
+        for person_id in range(max_person_id + 1):
+            person_images_data = db.select_curr_images_data(person_id=person_id)
+            coincidence = self.persons_compare(person_image, person_images_data)
+            coincidences.append(coincidence)
+        coincidences = np.array(coincidences)
+        max_coincidence, ind = np.max(coincidences), np.argmax(coincidences)
+        curr_person_id = int(ind) if max_coincidence >= PERSON_REID_THRESHOLD else max_person_id + 1
+        return curr_person_id
 
-        return -1
+    def persons_compare(self, person_image: np.ndarray, other_images_data: list) -> float:
+        same = 0
+        diff = 0
+        for ind in range(0, len(other_images_data), len(other_images_data) // 10 + 1):
+            other_data = other_images_data[ind]
+            other_image = other_data["image"]
+            is_same = self.reid.compare(person_image, other_image)
+            same += is_same
+            diff += 1
+        return same / diff * 100
 
 
     @staticmethod
