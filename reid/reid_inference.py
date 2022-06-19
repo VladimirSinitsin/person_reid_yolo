@@ -43,9 +43,7 @@ class Reid:
             raise Exception("REID Error: Bad checkpoints path!")
 
     def compare(self, image_1, image_2):
-        image1 = reid_img_preproc(image_1)
-        image2 = reid_img_preproc(image_2)
-        test_images = np.array([image1, image2])
+        test_images = np.array([image_1, image_2])
 
         feed_dict = {self.images: test_images, self.is_train: False}
         prediction = self.sess.run(self.inference, feed_dict=feed_dict)
