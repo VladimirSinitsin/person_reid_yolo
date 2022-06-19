@@ -67,7 +67,7 @@ def get_iou(bbox_1, bbox_2) -> float:
     bbox_1_area = (bbox_1[2] - bbox_1[0]) * (bbox_1[3] - bbox_1[1])
     bbox_2_area = (bbox_2[2] - bbox_2[0]) * (bbox_2[3] - bbox_2[1])
 
-    iou = float(inter_area) / float(bbox_1_area + bbox_2_area - inter_area)
+    iou = float(inter_area) / float(bbox_1_area + bbox_2_area - inter_area) * 100
     return iou
 
 
@@ -76,4 +76,5 @@ def get_xy_max_diff(bbox_1, bbox_2) -> float:
     max_y = max(bbox_1[3] - bbox_1[1], bbox_2[3] - bbox_2[1])
     min_x = min(bbox_1[2] - bbox_1[0], bbox_2[2] - bbox_2[0])
     min_y = min(bbox_1[3] - bbox_1[1], bbox_2[3] - bbox_2[1])
-    return max(abs(max_x - min_x) / max_x, abs(max_y - min_y) / max_y) * 100
+    # return max(abs(max_x - min_x) / max_x, abs(max_y - min_y) / max_y) * 100
+    return abs(max_y - min_y) / max_y * 100
