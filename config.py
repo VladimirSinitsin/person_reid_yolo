@@ -5,7 +5,7 @@ import numpy as np
 ROOTPATH = Path(__file__).parent
 
 # DBMS debugging.
-RECREATE_DB = True  # must be False
+RECREATE_DB = False  # must be False
 
 # Reid image input shape.
 REID_IMAGE_SHAPE = (1, 160, 60, 3)  # from model architecture
@@ -17,10 +17,12 @@ REID_IMAGE_DTYPE = np.dtype("float64")
 BLACK_MARGINS = True
 
 # Video capturing settings.
-SOURCE_VIDEO_FILE_PATH = f"{ROOTPATH}/test_data/we_1.mp4"
+SOURCE_VIDEO_FILE_PATH = f"{ROOTPATH}/test_data/we_2.mp4"
 SAVE_RECORDS = True
 REC_PATH = f"{ROOTPATH}/recordings"
-EACH_FRAME = 5
+EACH_FRAME = 3
 XY_THRESHOLD = 20
 IOU_THRESHOLD = 20
 MAX_IOU_THRESHOLD = 50
+STEP_PERSONS_DATA = 1
+PERSON_REID_THRESHOLD = 20
