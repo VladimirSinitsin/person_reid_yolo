@@ -30,6 +30,7 @@ class MainClass:
             REC_PATH.mkdir(exist_ok=True)
 
     def file_capturing(self) -> None:
+        """ Get frames from video and mark they. """
         cap = cv2.VideoCapture(SOURCE_VIDEO_FILE_PATH)
         i_frame = 0
         while True:
@@ -59,6 +60,7 @@ class MainClass:
         cap.release()
 
     def frame_proc(self, frame: np.ndarray) -> np.ndarray:
+        """ Re-identification people and mark frame. """
         self.temp_prev_bboxes_data = []
         person_objects = []
         person_images, bboxes = self.yolo.create_person_images(frame)
@@ -74,6 +76,7 @@ class MainClass:
         return result_frame
 
     def person_proc(self, person_image: np.ndarray, bbox: np.ndarray) -> int:
+        """ et of solutions and terms for `person_image`. """
         # Create list of tuples (iou, bbox).
         iou = [(get_iou(prev_bbox_data["bbox"], bbox), prev_bbox_data) for prev_bbox_data in self.prev_bboxes_data]
         if len(iou) == 0:  # if new person (can be only part of body)
