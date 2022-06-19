@@ -22,7 +22,9 @@ class Yolo:
         """
         results = self.model(image)
         results_pd = results.pandas().xyxy[0]
-        bboxes = np.array(results_pd[['xmin', 'ymin', 'xmax', 'ymax']]).astype(int)
+        bboxes = np.array(results_pd[["xmin", "ymin", "xmax", "ymax"]]).astype(int)
+        confidence = np.array(results_pd["confidence"]).astype(float)
+        bboxes = np.array([bboxes[i] for i, c in enumerate(confidence) if c > 0.9]) if bboxes.size != 0 else bboxes
         return bboxes
 
     def create_person_images(self, image: np.ndarray) -> Tuple[List[np.ndarray], np.ndarray]:
