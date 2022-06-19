@@ -71,10 +71,8 @@ def get_iou(bbox_1, bbox_2) -> float:
     return iou
 
 
-def get_xy_max_diff(bbox_1, bbox_2) -> float:
-    max_x = max(bbox_1[2] - bbox_1[0], bbox_2[2] - bbox_2[0])
+def get_y_max_diff(bbox_1, bbox_2) -> float:
+    """ Get different of y-axis size of 2 bboxes. """
     max_y = max(bbox_1[3] - bbox_1[1], bbox_2[3] - bbox_2[1])
-    min_x = min(bbox_1[2] - bbox_1[0], bbox_2[2] - bbox_2[0])
     min_y = min(bbox_1[3] - bbox_1[1], bbox_2[3] - bbox_2[1])
-    # return max(abs(max_x - min_x) / max_x, abs(max_y - min_y) / max_y) * 100
     return abs(max_y - min_y) / max_y * 100

@@ -6,7 +6,7 @@ import db
 from reid import Reid
 from yolov5 import Yolo
 from tools import get_iou
-from tools import get_xy_max_diff
+from tools import get_y_max_diff
 from tools import reid_img_preproc
 from tools import get_date_now_formatted
 from config import SOURCE_VIDEO_FILE_PATH, SAVE_RECORDS, REC_PATH, EACH_FRAME
@@ -70,15 +70,15 @@ class MainClass:
         max_iou = sorted(iou, key=lambda x: x[0])[-1]
         if max_iou[0] < IOU_THRESHOLD:  # if small iou - new person (can be only part of body)
             return -1
-        xy_thr = get_xy_max_diff(bbox, max_iou[1]["bbox"]) < XY_THRESHOLD
+        y_thr = get_y_max_diff(bbox, max_iou[1]["bbox"]) < XY_THRESHOLD
         # Sophisticated logic.
-        if xy_thr and max_iou[1]["p_id"] == -1:  # second arrival of a new person (small bbox change)
+        if y_thr and max_iou[1]["p_id"] == -1:  # second arrival of a new person (small bbox change)
             return self.reid_comparator(person_image)
-        elif xy_thr and max_iou[1]["p_id"] != -1:  # another arrival of an already known person (small bbox change)
+        elif y_thr and max_iou[1]["p_id"] != -1:  # another arrival of an already known person (small bbox change)
             return max_iou[1]["p_id"]
-        elif not xy_thr and max_iou[1]["p_id"] == -1:  # big bbox change and unknown person
+        elif not y_thr and max_iou[1]["p_id"] == -1:  # big bbox change and unknown person
             return -1
-        elif not xy_thr and max_iou[1]["p_id"] != -1:  # perhaps known, but because of big bbox change
+        elif not y_thr and max_iou[1]["p_id"] != -1:  # perhaps known, but because of big bbox change
             if max_iou[0] > MAX_IOU_THRESHOLD:
                 return max_iou[1]["p_id"]  # if the intersection is big - believe that the known person
             else:
