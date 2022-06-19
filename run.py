@@ -47,8 +47,8 @@ class MainClass:
 
             # Work with frame.
             result_frame = self.frame_proc(frame)
-            result_frame = cv2.resize(result_frame, (1280, 720))
-            cv2.imshow("Q for exit", result_frame)
+            show_result_frame = cv2.resize(result_frame, (1280, 720))
+            cv2.imshow("Q for exit", show_result_frame)
             # Save `result_frame` to `REC_PATH`
             if SAVE_RECORDS:
                 self.save_frame(result_frame)
