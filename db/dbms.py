@@ -56,9 +56,8 @@ def select_all_images_data() -> list:
     result = []
     for row in rows:
         dict_row = {"person_id": row[1],
-                    "prediction": row[2],
-                    "date": row[3],
-                    "image": bytes_to_image(row[4])}
+                    "date": row[2],
+                    "image": bytes_to_image(row[3])}
         result.append(dict_row)
     return result
 
@@ -74,17 +73,14 @@ def select_curr_images_data(person_id: int) -> list:
     result = []
     for row in rows:
         dict_row = {"person_id": row[1],
-                    "prediction": row[2],
-                    "date": row[3],
-                    "image": bytes_to_image(row[4])}
+                    "date": row[2],
+                    "image": bytes_to_image(row[3])}
         result.append(dict_row)
-    # Sorting by prediction.
-    sorted_result = sorted(result, key=lambda d: float(d["prediction"]))
-    return sorted_result
+    return result
 
 
 def select_max_person_id() -> int:
     """ Select max value of person_id column. """
     cursor.execute(f"SELECT person_id FROM PersonImages")
     rows = np.array(cursor.fetchall())
-    return np.max(rows)
+    return int(np.max(rows)) if rows.size != 0 else -1
