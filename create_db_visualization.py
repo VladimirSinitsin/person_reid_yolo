@@ -31,7 +31,7 @@ def write_image(image_data: dict, vis_path: Path) -> None:
         image_path.mkdir()
     # Convert image to normal format and write it.
     image = reid_img_revert(image_data["image"])
-    image_filename = f"{image_data['date']}_{image_data['prediction']}.jpg"
+    image_filename = f"{image_data['date']}.jpg"
     cv2.imwrite(f"{image_path}/{image_filename}", image)
 
 
