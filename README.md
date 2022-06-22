@@ -1,9 +1,12 @@
 # Person re-identification with YOLOv5s
+YOLOv5 repo: https://github.com/ultralytics/yolov5 \
+Re-identification model [paper](https://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Ahmed_An_Improved_Deep_2015_CVPR_paper.pdf)
 
 ## Setup
 1. Open Anaconda Prompt and navigate into project directory `cd path_to_repo`
 2. Run `conda env create` from project directory (this will create a brand new conda environment).
 3. Run `conda activate reid_torch` (if you want to run scripts from your console otherwise set the interpreter in your IDE)
+* If you want, you can install packages from `requirements.txt` (`pip install -r requirements.txt` on terminal)
 4. Download weights [here](https://drive.google.com/drive/folders/1rVbrrTbeamdKKYb9w9V3FuNBGSksu16z?usp=sharing).
 And place them in the paths: `person_reid_yolo/reid/logs` and `person_reid_yolo/reid/model`.
 
